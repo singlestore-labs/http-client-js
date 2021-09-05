@@ -6,9 +6,6 @@ info:
   version: "1.0.0"
   description: >-
     This API allows you to execute SQL statements against a SingleStore database.  It supports all statements that can be run in a direct database connection, and uses conventional data type conversion.
-  license:
-    name: Apache-2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 
 security:
   - BasicAuth: []
