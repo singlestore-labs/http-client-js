@@ -13,8 +13,6 @@
 //       Also, ensure that S2PROXY points to the host and port of the 
 //       SingleStore HTTP Proxy.
 //
-//     - Make sure you are in this repo's "js" directory.
-//
 //     - Run:
 //           npm install @singlestore/http-client --save
 //
