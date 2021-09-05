@@ -6,6 +6,9 @@ info:
   version: "1.0.0"
   description: >-
     This API allows you to execute SQL statements against a SingleStore database.  It supports all statements that can be run in a direct database connection, and uses conventional data type conversion.
+  license:
+    name: Apache-2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 
 security:
   - BasicAuth: []
@@ -15,6 +18,8 @@ paths:
     get:
       operationId: spec
       summary: Spec
+      tags:
+        - http
       description: 'Returns the OpenAPI specification for this service.'
       responses:
         '200':
@@ -28,6 +33,8 @@ paths:
     post:
       operationId: tuples
       summary: Query
+      tags:
+        - http
       description: Executes a SQL statement and returns result sets along with the schema; typically used for the SELECT statement for which result sets are expected. The result sets contain rows and columns in separate fields with the schema displayed for each column.
       requestBody:
         description: The request should include a JSON payload in the HTTP POST body.  The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
@@ -48,6 +55,8 @@ paths:
     post:
       operationId: rows
       summary: Query
+      tags:
+        - http
       description: Executes a SQL statement and returns result sets; typically used for the SELECT statement for which result sets are expected. The result sets contain column names mapped to row values in a single field.
       requestBody:
         description: |-
@@ -70,6 +79,8 @@ paths:
     post:
       operationId: exec
       summary: Exec
+      tags:
+        - http
       description: Executes a SQL statement without returning result sets; typically used for executing DDL and DML statements for which result sets are not expected, such as CREATE TABLE and INSERT statements.
       requestBody:
         description: |-
@@ -93,6 +104,8 @@ paths:
     get:
       operationId: ping
       summary: Ping
+      tags:
+        - http
       description: 'Verifies that the HTTP service is running and connectable.  Note: To verify that the database can receive queries or check specific health metrics, use the /exec and /query endpoints.'
       responses:
         '200':
