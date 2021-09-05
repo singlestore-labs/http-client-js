@@ -1,0 +1,327 @@
+
+openapi: 3.0.3
+
+info:
+  title: SingleStore HTTP API Spec
+  version: "1.0.0"
+  description: >-
+    This API allows you to execute SQL statements against a SingleStore database.  It supports all statements that can be run in a direct database connection, and uses conventional data type conversion.
+
+security:
+  - BasicAuth: []
+
+paths:
+  /api/v1/spec:
+    get:
+      operationId: spec
+      summary: Spec
+      description: 'Returns the OpenAPI specification for this service.'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/v1/query/tuples:
+    post:
+      operationId: tuples
+      summary: Query
+      description: Executes a SQL statement and returns result sets along with the schema; typically used for the SELECT statement for which result sets are expected. The result sets contain rows and columns in separate fields with the schema displayed for each column.
+      requestBody:
+        description: The request should include a JSON payload in the HTTP POST body.  The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryInput'
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamOutput'
+
+  /api/v1/query/rows:
+    post:
+      operationId: rows
+      summary: Query
+      description: Executes a SQL statement and returns result sets; typically used for the SELECT statement for which result sets are expected. The result sets contain column names mapped to row values in a single field.
+      requestBody:
+        description: |-
+            The request should include a JSON payload in the HTTP POST body.
+            The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryInput'
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryOutput'
+                
+  /api/v1/exec:
+    post:
+      operationId: exec
+      summary: Exec
+      description: Executes a SQL statement without returning result sets; typically used for executing DDL and DML statements for which result sets are not expected, such as CREATE TABLE and INSERT statements.
+      requestBody:
+        description: |-
+          The request should include a JSON payload in the HTTP POST body.
+          The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecInput'
+      responses:
+        '200':
+          description: |-
+              200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecOutput'
+
+  /ping:
+    get:
+      operationId: ping
+      summary: Ping
+      description: 'Verifies that the HTTP service is running and connectable.  Note: To verify that the database can receive queries or check specific health metrics, use the /exec and /query endpoints.'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+
+components:
+  securitySchemes:
+      BasicAuth:
+        type: http
+        scheme: basic
+
+  schemas:
+    QueryOutput:
+      type: object
+      properties:
+        results:
+          description: An array of objects describing each result set.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultSet'
+          example: |-
+            {
+              "results": [
+                {
+                  "rows": [
+                    {
+                      "title": "Dangerous Spindle",
+                      "genre": "Crime Thriller"
+                    }
+                  ]
+                }
+              ]
+            }
+        error:
+          type: object
+          description: This key will be specified if an error occurred while streaming the results.  Since we may encounter an error after sending response headers a valid client should always check this field before using a response.
+          properties:
+            code:
+              type: integer
+              description: The error code.
+            message:
+              type: string
+              description: The error message.
+
+    ResultSet:
+      type: object
+      description: An object describing a single result set.
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Result'
+
+    Result:
+      type: object
+      description: Dictionary of column names to row.
+      additionalProperties:
+        $ref: '#/components/schemas/RowValue'
+
+    RowValue:
+      description: A single value in the result statement.
+      nullable: true
+      anyOf:
+        - type: string
+        - type: number
+        - type: integer
+        - type: boolean
+        - type: object
+
+    StreamResult:
+      type: object
+      description: An object describing a single result set.
+      required:
+        - rows
+        - columns
+      properties:
+        rows:
+          type: array
+          description: An array of tuples, one for each row in the result set
+          items:
+            $ref: '#/components/schemas/RowTuple'
+        columns:
+          type: array
+          description: An array of objects describing each column.
+          items:
+            $ref: '#/components/schemas/Column'
+
+    RowTuple:
+      type: array
+      description: A single row in the result set, encoded as an array of column values matching the column order as specified by results[x].columns
+      items:
+        $ref: '#/components/schemas/RowValue'
+
+    Column:
+      type: object
+      description: An object describing a single column
+      required:
+        - name
+        - dataType
+        - nullable
+      properties:
+        name:
+          type: string
+          description: The name of the column
+        dataType:
+          type: string
+          description: |-
+            The data type of the column as documented https://docs.singlestore.com/v7.3/reference/sql-reference/datatypes/
+        nullable:
+          type: boolean
+          description: |-
+            "true" if the value can be null, "false" otherwise
+
+    StreamOutput:
+      type: object
+      properties:
+        results:
+          description: An array of objects describing each result set
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamResult'
+          example: |-
+            {
+              "results": [
+                {
+                  "columns": [
+                    {
+                      "author_name": "title",
+                      "dataType": "VARCHAR",
+                      "nullable": false
+                    },
+                    {
+                      "author_name": "genre",
+                      "dataType": "VARCHAR",
+                      "nullable": false
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Dangerous Spindle",
+                      "Crime Thriller"
+                    ]
+                  ]
+                }
+              ]
+            }
+        error:
+          type: object
+          description: This key will be specified if an error occurred while streaming the results.  Since we may encounter an error after sending response headers a valid client should always check this field before using a response.
+          properties:
+            code:
+              type: integer
+              description: The error code.
+            message:
+              type: string
+              description: The error message.
+
+    QueryInput:
+      type: object
+      required:
+        - sql
+      properties:
+        sql:
+          type: string
+          description: The SQL statement to execute.
+        args:
+          type: array
+          description: |-
+            If specified:
+            A list of arguments to be used in the SQL statement. The command uses question marks (?) for placeholders, which will be replaced by the specified arguments during execution. The command must have exactly as many placeholders as arguments, or the request will fail. 
+            If not specified:
+            The query will be run as-is
+          items:
+            $ref: '#/components/schemas/QueryInputArg'
+        database:
+          type: string
+          description: |-
+            If specified:
+            The database on which the SQL statement must be executed. 
+      example: {"sql": "SELECT books.title, authors.author_name, books.genre, books.rating FROM books INNER JOIN authors ON books.author_id = authors.author_id AND books.genre = (?) ORDER BY books.rating DESC", "args": ["Crime Thriller"], "database": "publications"}
+
+    ExecInput:
+      type: object
+      required:
+        - sql
+      properties:
+        sql:
+          type: string
+          description: The SQL statement to execute.
+        args:
+          type: array
+          description: |-
+            If specified:
+            A list of arguments to be used in the SQL statement. The command uses question marks (?) for placeholders, which will be replaced by the specified arguments during execution. The command must have exactly as many placeholders as arguments, or the request will fail. 
+            If not specified:
+            The query will be run as-is
+          example: {"sql": "INSERT INTO tbl (col1, col2) VALUES (?, ?)", "args": ["Hello", 2]}
+          items:
+            $ref: '#/components/schemas/QueryInputArg'
+        database:
+          type: string
+          description: |-
+            If specified:
+            The database on which the SQL statement must be executed.
+      example: {"sql": "INSERT INTO authors (author_name) VALUES (?), (?), (?)", "args": ["Kegan Roslyn", "Toby Lynsey", "Lacey Desmond"], "database": "publications"}
+
+    QueryInputArg:
+      description: An argument to be used in a SQL statement.
+      anyOf:
+        - type: string
+        - type: number
+        - type: integer
+        - type: boolean
+        - type: object
+
+    ExecOutput:
+      type: object
+      properties:
+        lastInsertId:
+          type: integer
+          description: Returns the last value inserted into an AUTO_INCREMENT column.  May be omitted if irrelevant to the command.
+        rowsAffected:
+          type: integer
+          description: The number of rows affected by the command.
+      example: { "lastInsertId": 0, "rowsAffected": 1 }
+
+
