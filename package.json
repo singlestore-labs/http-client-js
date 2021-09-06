@@ -1,8 +1,8 @@
 {
   "name": "@singlestore/http-client",
   "version": "1.0.0",
-  "description": "This_API_allows_you_to_execute_SQL_statements_against_a_SingleStore_database___It_supports_all_statements_that_can_be_run_in_a_direct_database_connection_and_uses_conventional_data_type_conversion_",
-  "license": "Apache 2.0",
+  "description": "This API allows you to execute SQL statements against a SingleStore database.  It supports all statements that can be run in a direct database connection, and uses conventional data type conversion.",
+  "license": "Apache-2.0",
   "main": "dist/SingleStore/index.js",
   "scripts": {
     "build": "babel src -d dist",
