@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: SingleStore HTTP API Spec
-  version: "1.0.0"
+  version: "2.0.0"
   description: >-
     This API allows you to execute SQL statements against a SingleStore database.  It supports all statements that can be run in a direct database connection, and uses conventional data type conversion.
 
@@ -11,22 +11,22 @@ security:
   - BasicAuth: []
 
 paths:
-  /api/v1/spec:
+  /api/v2/spec:
     get:
       operationId: spec
       summary: Spec
       tags:
         - http
-      description: 'Returns the OpenAPI specification for this service.'
+      description: "Returns the OpenAPI specification for this service."
       responses:
-        '200':
+        "200":
           description: OK
           content:
             text/plain:
               schema:
                 type: string
 
-  /api/v1/query/tuples:
+  /api/v2/query/tuples:
     post:
       operationId: tuples
       summary: Query
@@ -38,17 +38,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryInput'
+              $ref: "#/components/schemas/QueryInput"
       responses:
-        '200':
+        "200":
           description: |-
             200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StreamOutput'
+                $ref: "#/components/schemas/StreamOutput"
 
-  /api/v1/query/rows:
+  /api/v2/query/rows:
     post:
       operationId: rows
       summary: Query
@@ -57,22 +57,22 @@ paths:
       description: Executes a SQL statement and returns result sets; typically used for the SELECT statement for which result sets are expected. The result sets contain column names mapped to row values in a single field.
       requestBody:
         description: |-
-            The request should include a JSON payload in the HTTP POST body.
-            The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
+          The request should include a JSON payload in the HTTP POST body.
+          The payload must match the following specification precisely, invalid payloads will raise a validation error describing the issue.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryInput'
+              $ref: "#/components/schemas/QueryInput"
       responses:
-        '200':
+        "200":
           description: |-
             200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryOutput'
-                
-  /api/v1/exec:
+                $ref: "#/components/schemas/QueryOutput"
+
+  /api/v2/exec:
     post:
       operationId: exec
       summary: Exec
@@ -87,15 +87,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExecInput'
+              $ref: "#/components/schemas/ExecInput"
       responses:
-        '200':
+        "200":
           description: |-
-              200 response
+            200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExecOutput'
+                $ref: "#/components/schemas/ExecOutput"
 
   /ping:
     get:
@@ -103,9 +103,9 @@ paths:
       summary: Ping
       tags:
         - http
-      description: 'Verifies that the HTTP service is running and connectable.  Note: To verify that the database can receive queries or check specific health metrics, use the /exec and /query endpoints.'
+      description: "Verifies that the HTTP service is running and connectable.  Note: To verify that the database can receive queries or check specific health metrics, use the /exec and /query endpoints."
       responses:
-        '200':
+        "200":
           description: OK
           content:
             text/plain:
@@ -115,9 +115,9 @@ paths:
 
 components:
   securitySchemes:
-      BasicAuth:
-        type: http
-        scheme: basic
+    BasicAuth:
+      type: http
+      scheme: basic
 
   schemas:
     QueryOutput:
@@ -127,7 +127,7 @@ components:
           description: An array of objects describing each result set.
           type: array
           items:
-            $ref: '#/components/schemas/ResultSet'
+            $ref: "#/components/schemas/ResultSet"
           example: |-
             {
               "results": [
@@ -159,13 +159,13 @@ components:
         rows:
           type: array
           items:
-            $ref: '#/components/schemas/Result'
+            $ref: "#/components/schemas/Result"
 
     Result:
       type: object
       description: Dictionary of column names to row.
       additionalProperties:
-        $ref: '#/components/schemas/RowValue'
+        $ref: "#/components/schemas/RowValue"
 
     RowValue:
       description: A single value in the result statement.
@@ -188,18 +188,18 @@ components:
           type: array
           description: An array of tuples, one for each row in the result set
           items:
-            $ref: '#/components/schemas/RowTuple'
+            $ref: "#/components/schemas/RowTuple"
         columns:
           type: array
           description: An array of objects describing each column.
           items:
-            $ref: '#/components/schemas/Column'
+            $ref: "#/components/schemas/Column"
 
     RowTuple:
       type: array
       description: A single row in the result set, encoded as an array of column values matching the column order as specified by results[x].columns
       items:
-        $ref: '#/components/schemas/RowValue'
+        $ref: "#/components/schemas/RowValue"
 
     Column:
       type: object
@@ -215,7 +215,7 @@ components:
         dataType:
           type: string
           description: |-
-            The data type of the column as documented https://docs.singlestore.com/v7.3/reference/sql-reference/datatypes/
+            The data type of the column as documented https://docs.singlestore.com/managed-service/en/reference/sql-reference/data-types.html
         nullable:
           type: boolean
           description: |-
@@ -228,7 +228,7 @@ components:
           description: An array of objects describing each result set
           type: array
           items:
-            $ref: '#/components/schemas/StreamResult'
+            $ref: "#/components/schemas/StreamResult"
           example: |-
             {
               "results": [
@@ -281,13 +281,18 @@ components:
             If not specified:
             The query will be run as-is
           items:
-            $ref: '#/components/schemas/QueryInputArg'
+            $ref: "#/components/schemas/QueryInputArg"
         database:
           type: string
           description: |-
             If specified:
-            The database on which the SQL statement must be executed. 
-      example: {"sql": "SELECT books.title, authors.author_name, books.genre, books.rating FROM books INNER JOIN authors ON books.author_id = authors.author_id AND books.genre = (?) ORDER BY books.rating DESC", "args": ["Crime Thriller"], "database": "publications"}
+            The database on which the SQL statement must be executed.
+      example:
+        {
+          "sql": "SELECT books.title, authors.author_name, books.genre, books.rating FROM books INNER JOIN authors ON books.author_id = authors.author_id AND books.genre = (?) ORDER BY books.rating DESC",
+          "args": ["Crime Thriller"],
+          "database": "publications",
+        }
 
     ExecInput:
       type: object
@@ -304,15 +309,24 @@ components:
             A list of arguments to be used in the SQL statement. The command uses question marks (?) for placeholders, which will be replaced by the specified arguments during execution. The command must have exactly as many placeholders as arguments, or the request will fail. 
             If not specified:
             The query will be run as-is
-          example: {"sql": "INSERT INTO tbl (col1, col2) VALUES (?, ?)", "args": ["Hello", 2]}
+          example:
+            {
+              "sql": "INSERT INTO tbl (col1, col2) VALUES (?, ?)",
+              "args": ["Hello", 2],
+            }
           items:
-            $ref: '#/components/schemas/QueryInputArg'
+            $ref: "#/components/schemas/QueryInputArg"
         database:
           type: string
           description: |-
             If specified:
             The database on which the SQL statement must be executed.
-      example: {"sql": "INSERT INTO authors (author_name) VALUES (?), (?), (?)", "args": ["Kegan Roslyn", "Toby Lynsey", "Lacey Desmond"], "database": "publications"}
+      example:
+        {
+          "sql": "INSERT INTO authors (author_name) VALUES (?), (?), (?)",
+          "args": ["Kegan Roslyn", "Toby Lynsey", "Lacey Desmond"],
+          "database": "publications",
+        }
 
     QueryInputArg:
       description: An argument to be used in a SQL statement.
@@ -333,5 +347,3 @@ components:
           type: integer
           description: The number of rows affected by the command.
       example: { "lastInsertId": 0, "rowsAffected": 1 }
-
-

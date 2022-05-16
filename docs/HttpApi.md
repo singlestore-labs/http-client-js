@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**exec**](HttpApi.md#exec) | **POST** /api/v1/exec | Exec
+[**exec**](HttpApi.md#exec) | **POST** /api/v2/exec | Exec
 [**ping**](HttpApi.md#ping) | **GET** /ping | Ping
-[**rows**](HttpApi.md#rows) | **POST** /api/v1/query/rows | Query
-[**spec**](HttpApi.md#spec) | **GET** /api/v1/spec | Spec
-[**tuples**](HttpApi.md#tuples) | **POST** /api/v1/query/tuples | Query
+[**rows**](HttpApi.md#rows) | **POST** /api/v2/query/rows | Query
+[**spec**](HttpApi.md#spec) | **GET** /api/v2/spec | Spec
+[**tuples**](HttpApi.md#tuples) | **POST** /api/v2/query/tuples | Query
 
 
 
